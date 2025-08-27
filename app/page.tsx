@@ -1,103 +1,73 @@
-import Image from "next/image";
+// app/page.tsx
+import Header from "@/components/Header";
+import Countdown from "@/components/Countdown";
+import ProductCard from "@/components/ProductCard";
 
-export default function Home() {
+type Product = { id: number; name: string; price: number; img: string; badge?: string };
+
+function getBaseUrl() {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return 'http://localhost:3000';
+}
+
+async function getProducts(): Promise<Product[]> {
+  const base = process.env.NEXT_PUBLIC_API_BASE;
+  const res = await fetch(`${base}/api/products`, { cache: 'no-store' });
+  return res.ok ? await res.json() : [];
+}
+
+
+
+export default async function Home() {
+  const products = await getProducts();
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main>
+      <Header />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* HERO */}
+      <section className="px-6 md:px-10 pt-16 pb-10 text-center">
+        <h1 className="text-4xl md:text-6xl font-extrabold tracking-widest uppercase text-cyan-300">
+          FrostBoyz
+        </h1>
+        <p className="mt-3 opacity-80">Icy jewelry for cold hearts</p>
+        <div className="mt-8 max-w-md mx-auto">
+          {/* schimbă data/ora după nevoie (ISO) */}
+          <Countdown targetISO="2025-09-01T20:00:00" />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </section>
+
+      {/* GRID PRODUSE */}
+      <section id="drops" className="px-6 md:px-10 pb-16">
+        <div className="flex items-end justify-between mb-4">
+          <h2 className="text-xl tracking-wider uppercase opacity-90">Upcoming Drops</h2>
+          <a className="text-sm opacity-70 hover:text-cyan-300" href="#">See all</a>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {products.map((p) => (
+            <ProductCard key={p.id} p={p} />
+          ))}
+        </div>
+
+        {!products.length && (
+          <p className="opacity-60 text-sm mt-6">No products yet — come back soon.</p>
+        )}
+      </section>
+
+      {/* FOOTER */}
+      <footer id="policies" className="border-t border-neutral-800 px-6 md:px-10 py-10 text-sm opacity-70">
+        <div className="flex flex-col md:flex-row gap-2 md:gap-6 md:items-center md:justify-between">
+          <span>© 2025 FrostBoyz. All rights reserved.</span>
+          <nav className="flex gap-4">
+            <a href="#" className="hover:text-cyan-300">Shipping & Returns</a>
+            <a href="#" className="hover:text-cyan-300">Privacy</a>
+            <a href="#" className="hover:text-cyan-300">Terms</a>
+          </nav>
+        </div>
       </footer>
-    </div>
+    </main>
   );
 }
+
